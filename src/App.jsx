@@ -349,8 +349,8 @@ export default function App() {
                     ? 'bg-white text-[#1d1d1f] shadow-sm font-bold'
                     : 'text-[#86868b] hover:text-[#1d1d1f]'
                 }`}
-              >
-                Find Jahana
+              > 
+                Reach Jahana
               </button>
             </div>
 

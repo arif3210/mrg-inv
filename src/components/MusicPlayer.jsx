@@ -19,6 +19,7 @@ export default function MusicPlayer({ audioSrc = '/music.mp3' }) {
 
     // Start loading audio in background after website is displayed
     audio.src = audioSrc;
+    audio.volume = 0.10; // Gentle low volume (10% as requested)
     audio.load();
 
     const attemptAutoplay = () => {

@@ -393,7 +393,7 @@ export default function FindJahanaGame() {
       </div>
 
       <p className="text-xs text-[#6e6e73] mb-3">
-        Navigate the random labyrinth to guide Arif to Jahana at Al Fitra Auditorium!
+        Navigate the random labyrinth to guide Arif to reach Jahana!
       </p>
 
       {/* Stats bar */}
