@@ -95,6 +95,91 @@ export const playSound = {
     } catch (e) {}
   },
 
+  // Full celebratory wedding victory music track
+  winMusic: () => {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
+
+      // Melody notes: [freq, startTimeOffset, duration, gain]
+      // Triumphant wedding melody in C Major
+      const melody = [
+        [523.25, 0.0, 0.22, 0.20], // C5
+        [659.25, 0.22, 0.22, 0.22], // E5
+        [783.99, 0.44, 0.35, 0.24], // G5
+        [1046.5, 0.80, 0.55, 0.28], // C6 (triumph!)
+        [987.77, 1.35, 0.25, 0.20], // B5
+        [880.00, 1.60, 0.25, 0.22], // A5
+        [783.99, 1.85, 0.35, 0.25], // G5
+        [880.00, 2.20, 0.25, 0.22], // A5
+        [987.77, 2.45, 0.25, 0.24], // B5
+        [1046.5, 2.70, 0.90, 0.30], // High C6 finale
+        [1318.5, 2.70, 0.90, 0.22], // High E6 harmony
+      ];
+
+      // Accompaniment chords
+      const chords = [
+        // Chord 1 (C Maj): C3, G3, E4 at 0.0s
+        [130.81, 0.0, 0.75, 0.12],
+        [196.00, 0.0, 0.75, 0.10],
+        [329.63, 0.0, 0.75, 0.08],
+        // Chord 2 (F Maj): F3, A3, C4 at 0.8s
+        [174.61, 0.8, 0.85, 0.12],
+        [220.00, 0.8, 0.85, 0.10],
+        [261.63, 0.8, 0.85, 0.08],
+        // Chord 3 (G Maj): G3, B3, D4 at 1.85s
+        [196.00, 1.85, 0.8, 0.12],
+        [246.94, 1.85, 0.8, 0.10],
+        [293.66, 1.85, 0.8, 0.08],
+        // Chord 4 (C Maj Grand): C3, G3, C4, E4 at 2.7s
+        [130.81, 2.70, 1.2, 0.15],
+        [196.00, 2.70, 1.2, 0.12],
+        [261.63, 2.70, 1.2, 0.12],
+        [329.63, 2.70, 1.2, 0.10],
+      ];
+
+      // Play melody
+      melody.forEach(([freq, offset, dur, volume]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + offset);
+
+        gain.gain.setValueAtTime(0, now + offset);
+        gain.gain.linearRampToValueAtTime(volume, now + offset + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + dur);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + offset);
+        osc.stop(now + offset + dur + 0.02);
+      });
+
+      // Play chords
+      chords.forEach(([freq, offset, dur, volume]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + offset);
+
+        gain.gain.setValueAtTime(0, now + offset);
+        gain.gain.linearRampToValueAtTime(volume, now + offset + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + dur);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + offset);
+        osc.stop(now + offset + dur + 0.02);
+      });
+    } catch (e) {}
+  },
+
   // Sudoku cell tap
   tileTap: () => {
     try {
@@ -189,6 +274,54 @@ export const playSound = {
 
       osc.start();
       osc.stop(ctx.currentTime + 0.19);
+    } catch (e) {}
+  },
+
+  // Soft step sound for maze walking
+  step: () => {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(480, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.04);
+
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.05);
+    } catch (e) {}
+  },
+
+  // Item pickup sound in maze (flowers, rings, gifts)
+  itemCollect: () => {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.12);
+
+      gain.gain.setValueAtTime(0.16, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.26);
     } catch (e) {}
   }
 };

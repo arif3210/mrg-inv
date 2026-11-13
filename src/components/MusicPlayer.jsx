@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, VolumeX, Music, AlertCircle } from 'lucide-react';
+import { Volume2, VolumeX, Music, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function MusicPlayer({ audioSrc = '/music.mp3' }) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -12,15 +13,54 @@ export default function MusicPlayer({ audioSrc = '/music.mp3' }) {
     const audio = audioRef.current;
     if (!audio) return;
 
+    setIsLoading(true);
     setLoadError(false);
     setErrorMessage('');
 
-    const handleCanPlay = () => setLoadError(false);
+    // Start loading audio in background after website is displayed
+    audio.src = audioSrc;
+    audio.load();
+
+    const attemptAutoplay = () => {
+      setIsLoading(false);
+      setLoadError(false);
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch(() => {
+            // Browser blocked unmuted autoplay until user interaction
+            setIsPlaying(false);
+            const startOnInteraction = () => {
+              audio
+                .play()
+                .then(() => {
+                  setIsPlaying(true);
+                })
+                .catch(() => {});
+            };
+
+            window.addEventListener('pointerdown', startOnInteraction, { once: true });
+            window.addEventListener('touchstart', startOnInteraction, { once: true });
+            window.addEventListener('keydown', startOnInteraction, { once: true });
+          });
+      }
+    };
+
+    const handleCanPlay = () => {
+      attemptAutoplay();
+    };
+
     const handleError = () => {
+      setIsLoading(false);
       setLoadError(true);
       setErrorMessage("Place 'music.mp3' in /public folder");
       setIsPlaying(false);
     };
+
     const handleEnded = () => {
       setIsPlaying(false);
       if (audio) {
@@ -29,11 +69,13 @@ export default function MusicPlayer({ audioSrc = '/music.mp3' }) {
       }
     };
 
-    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('canplaythrough', handleCanPlay, { once: true });
+    audio.addEventListener('canplay', handleCanPlay, { once: true });
     audio.addEventListener('error', handleError);
     audio.addEventListener('ended', handleEnded);
 
     return () => {
+      audio.removeEventListener('canplaythrough', handleCanPlay);
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('error', handleError);
       audio.removeEventListener('ended', handleEnded);
@@ -76,7 +118,7 @@ export default function MusicPlayer({ audioSrc = '/music.mp3' }) {
 
   return (
     <div className="fixed top-5 right-4 z-50">
-      <audio ref={audioRef} src={audioSrc} preload="metadata" loop playsInline />
+      <audio ref={audioRef} preload="auto" loop playsInline />
 
       <div className="relative group">
         <button
@@ -88,9 +130,11 @@ export default function MusicPlayer({ audioSrc = '/music.mp3' }) {
               : 'bg-white/90 backdrop-blur-md text-[#1d1d1f] border-black/[0.08] hover:border-black/[0.18]'
           }`}
         >
-          {/* Animated Equalizer */}
+          {/* Animated Equalizer, Spinner or Music Note */}
           <div className="relative flex items-center justify-center w-4 h-4">
-            {isPlaying ? (
+            {isLoading ? (
+              <Loader2 className="w-3.5 h-3.5 text-[#b89562] animate-spin" />
+            ) : isPlaying ? (
               <div className="flex items-end gap-0.5 h-3">
                 <span className="w-0.5 bg-white animate-[pulse_0.6s_ease-in-out_infinite] h-full" />
                 <span className="w-0.5 bg-white/70 animate-[pulse_0.4s_ease-in-out_infinite_0.2s] h-2/3" />
@@ -102,14 +146,18 @@ export default function MusicPlayer({ audioSrc = '/music.mp3' }) {
           </div>
 
           <span className="text-xs font-medium tracking-tight">
-            {isPlaying ? 'Playing' : 'Play Music'}
+            {isLoading
+              ? 'Loading MP3...'
+              : isPlaying
+              ? 'Pause Music'
+              : 'Play Music'}
           </span>
 
           {isPlaying && (
             <button
               onClick={toggleMute}
               className="p-0.5 hover:opacity-80 transition-opacity ml-0.5"
-              aria-label={isMuted ? "Unmute" : "Mute"}
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted ? <VolumeX className="w-3.5 h-3.5 text-red-400" /> : <Volume2 className="w-3.5 h-3.5 text-white" />}
             </button>

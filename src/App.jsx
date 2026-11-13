@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, Suspense, lazy } from 'react';
 import {
   Calendar,
   MapPin,
@@ -15,11 +15,90 @@ import MusicPlayer from './components/MusicPlayer';
 import CountdownTimer from './components/CountdownTimer';
 import SparkleCollectorGame from './components/SparkleCollectorGame';
 import SudokuGame from './components/SudokuGame';
+import FindJahanaGame from './components/FindJahanaGame';
 import PhysicsCard from './components/PhysicsCard';
+
+// Lazy load Limbo Easter Egg at the very end to ensure zero impact on initial site performance
+const LimboEasterEgg = lazy(() => import('./components/LimboEasterEgg'));
 
 export default function App() {
   const [chaosMode, setChaosMode] = useState(false);
   const [activeGameTab, setActiveGameTab] = useState('sparkles'); // 'sparkles' | 'sudoku'
+  const [isEasterEggOpen, setIsEasterEggOpen] = useState(false);
+
+  // Secret circle gesture detection around the couple's names
+  const namesRef = useRef(null);
+  const strokeRef = useRef({
+    isDrawing: false,
+    cx: 0,
+    cy: 0,
+    accumulatedAngle: 0,
+    lastAngle: 0,
+    maxDist: 0,
+  });
+  const tapCountRef = useRef(0);
+
+  const handlePointerDown = (e) => {
+    if (!namesRef.current) return;
+    const rect = namesRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const x = e.clientX;
+    const y = e.clientY;
+    const angle = Math.atan2(y - cy, x - cx);
+
+    strokeRef.current = {
+      isDrawing: true,
+      cx,
+      cy,
+      accumulatedAngle: 0,
+      lastAngle: angle,
+      maxDist: Math.hypot(x - cx, y - cy),
+    };
+  };
+
+  const handlePointerMove = (e) => {
+    const stroke = strokeRef.current;
+    if (!stroke.isDrawing) return;
+
+    const x = e.clientX;
+    const y = e.clientY;
+    const dx = x - stroke.cx;
+    const dy = y - stroke.cy;
+    const dist = Math.hypot(dx, dy);
+
+    stroke.maxDist = Math.max(stroke.maxDist, dist);
+
+    const currentAngle = Math.atan2(dy, dx);
+    let delta = currentAngle - stroke.lastAngle;
+
+    if (delta > Math.PI) delta -= 2 * Math.PI;
+    if (delta < -Math.PI) delta += 2 * Math.PI;
+
+    stroke.accumulatedAngle += delta;
+    stroke.lastAngle = currentAngle;
+
+    // A circle completed around names (>= 300 degrees and stroke dist > 25px)
+    if (Math.abs(stroke.accumulatedAngle) >= Math.PI * 1.65 && stroke.maxDist > 25) {
+      stroke.isDrawing = false;
+      setIsEasterEggOpen(true);
+    }
+  };
+
+  const handlePointerUp = () => {
+    strokeRef.current.isDrawing = false;
+  };
+
+  const handleAmpersandClick = () => {
+    tapCountRef.current++;
+    if (tapCountRef.current >= 3) {
+      tapCountRef.current = 0;
+      setIsEasterEggOpen(true);
+    }
+    setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 1200);
+  };
 
   const venueGoogleMapsUrl =
     'https://www.google.com/maps/search/?api=1&query=Al+Fitra+Auditorium+East+Kizhakkoth+Calicut';
@@ -83,19 +162,30 @@ export default function App() {
               </p>
             </div>
 
-            {/* Couple Names in Refined Luxury Italian Typography */}
-            <div className="my-10 space-y-2">
-              <h1 className="font-luxury text-5xl sm:text-7xl font-normal text-[#1d1d1f] tracking-wide">
+            {/* Couple Names in Refined Luxury Italian Typography (Draw circle outside to trigger easter egg) */}
+            <div
+              ref={namesRef}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              className="my-10 space-y-2 select-none touch-none cursor-pointer"
+            >
+              <h1 className="font-luxury text-5xl sm:text-7xl font-normal text-[#1d1d1f] tracking-wide pointer-events-none">
                 Arif
               </h1>
               
               <div className="flex items-center justify-center gap-3 my-2 text-[#b89562]">
                 <span className="h-[1px] w-12 bg-black/[0.08]" />
-                <span className="font-cormorant italic text-xl sm:text-2xl text-[#b89562]">&</span>
+                <span
+                  onClick={handleAmpersandClick}
+                  className="font-cormorant italic text-xl sm:text-2xl text-[#b89562] select-none hover:scale-110 active:scale-95 transition-transform"
+                >
+                  &
+                </span>
                 <span className="h-[1px] w-12 bg-black/[0.08]" />
               </div>
 
-              <h1 className="font-luxury text-5xl sm:text-7xl font-normal text-[#1d1d1f] tracking-wide">
+              <h1 className="font-luxury text-5xl sm:text-7xl font-normal text-[#1d1d1f] tracking-wide pointer-events-none">
                 Jahana
               </h1>
             </div>
@@ -231,10 +321,10 @@ export default function App() {
             </div>
 
             {/* Tabs */}
-            <div className="flex justify-center gap-1.5 p-1 bg-[#f5f5f7] rounded-2xl max-w-xs mx-auto border border-black/[0.04]">
+            <div className="flex justify-center gap-1.5 p-1 bg-[#f5f5f7] rounded-2xl max-w-sm mx-auto border border-black/[0.04]">
               <button
                 onClick={() => setActiveGameTab('sparkles')}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex-1 py-2 px-2 rounded-xl text-xs font-semibold transition-all ${
                   activeGameTab === 'sparkles'
                     ? 'bg-white text-[#1d1d1f] shadow-sm font-bold'
                     : 'text-[#86868b] hover:text-[#1d1d1f]'
@@ -244,7 +334,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => setActiveGameTab('sudoku')}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex-1 py-2 px-2 rounded-xl text-xs font-semibold transition-all ${
                   activeGameTab === 'sudoku'
                     ? 'bg-white text-[#1d1d1f] shadow-sm font-bold'
                     : 'text-[#86868b] hover:text-[#1d1d1f]'
@@ -252,14 +342,22 @@ export default function App() {
               >
                 Wedding Sudoku
               </button>
+              <button
+                onClick={() => setActiveGameTab('findJahana')}
+                className={`flex-1 py-2 px-2 rounded-xl text-xs font-semibold transition-all ${
+                  activeGameTab === 'findJahana'
+                    ? 'bg-white text-[#1d1d1f] shadow-sm font-bold'
+                    : 'text-[#86868b] hover:text-[#1d1d1f]'
+                }`}
+              >
+                Find Jahana
+              </button>
             </div>
 
             {/* Active Game */}
-            {activeGameTab === 'sparkles' ? (
-              <SparkleCollectorGame />
-            ) : (
-              <SudokuGame />
-            )}
+            {activeGameTab === 'sparkles' && <SparkleCollectorGame />}
+            {activeGameTab === 'sudoku' && <SudokuGame />}
+            {activeGameTab === 'findJahana' && <FindJahanaGame />}
           </section>
         </PhysicsCard>
 
@@ -281,6 +379,16 @@ export default function App() {
           </p>
         </footer>
       </main>
+
+      {/* Secret Limbo Easter Egg Overlay (Lazy-loaded, 0kb impact on initial page load) */}
+      <Suspense fallback={null}>
+        {isEasterEggOpen && (
+          <LimboEasterEgg
+            isOpen={isEasterEggOpen}
+            onClose={() => setIsEasterEggOpen(false)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }
