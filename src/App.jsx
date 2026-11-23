@@ -100,8 +100,7 @@ export default function App() {
     }, 1200);
   };
 
-  const venueGoogleMapsUrl =
-    'https://www.google.com/maps/search/?api=1&query=Al+Fitra+Auditorium+East+Kizhakkoth+Calicut';
+  const venueGoogleMapsUrl = 'https://maps.app.goo.gl/wSeTrpgu4vWvdrwn9';
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -121,9 +120,9 @@ export default function App() {
   const handleAddToCalendar = () => {
     const title = encodeURIComponent('Arif & Jahana Wedding');
     const details = encodeURIComponent(
-      'Nikah & Wedding Reception of Arif & Jahana at Al Fitra Auditorium, East Kizhakkoth, Kozhikode'
+      'Nikah & Wedding Reception of Arif & Jahana at Al Fitra Auditorium (Kids Park), East Kizhakkoth, Kozhikode'
     );
-    const location = encodeURIComponent('Al Fitra Auditorium, East Kizhakkoth, Kerala');
+    const location = encodeURIComponent('Kids Park - Al Fitrah, East Kizhakkoth, Kerala');
     const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261224T050000Z/20261224T110000Z&details=${details}&location=${location}`;
     window.open(googleCalUrl, '_blank');
   };
@@ -251,6 +250,9 @@ export default function App() {
                   <p className="text-xs text-[#6e6e73] mt-1 leading-relaxed">
                     East Kizhakkoth, Kozhikode, Kerala
                   </p>
+                  <p className="text-[11px] text-[#86868b] mt-1 leading-normal">
+                    Incorporated with Kids Park (Listed on Maps as <span className="font-medium text-[#1d1d1f]">Kids Park - Al Fitrah</span>)
+                  </p>
                 </div>
                 <a
                   href={venueGoogleMapsUrl}
@@ -298,7 +300,7 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="w-full block py-3 rounded-2xl bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#1d1d1f] text-xs font-semibold tracking-wide transition-colors border border-black/[0.04]"
               >
-                Open Al Fitra Auditorium in Google Maps
+                Open Location in Google Maps (Kids Park - Al Fitrah)
               </a>
             </div>
           </section>

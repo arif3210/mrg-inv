@@ -31,7 +31,7 @@ export default function CountdownTimer({ targetDate = '2026-12-24T10:00:00' }) {
   ];
 
   return (
-    <div className="flex items-center justify-center gap-2.5 sm:gap-3.5 my-6" data-physics-obstacle="true">
+    <div className="flex items-center justify-center gap-2.5 sm:gap-3.5 my-6">
       {units.map((unit, idx) => (
         <div
           key={idx}
