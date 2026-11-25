@@ -22,13 +22,13 @@ import FindJahanaGame from './components/FindJahanaGame';
 
 // Lazy load 3D Spatial Canvas for optimal initial paint & code-splitting
 const Spatial3DCanvas = lazy(() => import('./components/Spatial3DCanvas'));
-const LuxuryFolioScene = lazy(() => import('./components/3d/LuxuryFolioScene'));
+const ArchitecturalSanctuary = lazy(() => import('./components/3d/ArchitecturalSanctuary'));
 
 // Lazy load Limbo Easter Egg at the very end to ensure zero impact on initial site performance
 const LimboEasterEgg = lazy(() => import('./components/LimboEasterEgg'));
 
 export default function App() {
-  const [viewMode, setViewMode] = useState('box3d'); // 'box3d' | 'scroll'
+  const [viewMode, setViewMode] = useState('sanctuary3d'); // 'sanctuary3d' | 'scroll'
   const [chaosMode, setChaosMode] = useState(false);
   const [isOrbitMode, setIsOrbitMode] = useState(false);
   const [activeGameTab, setActiveGameTab] = useState('sparkles'); // 'sparkles' | 'sudoku'
@@ -137,15 +137,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#fbfbfd] text-[#1d1d1f] relative selection:bg-[#1d1d1f] selection:text-white font-sans overflow-x-hidden">
-      {/* Top Experience Switcher: 3D Box Folio vs Scroll View */}
+      {/* Top Experience Switcher: 3D Sanctuary vs Classic Scroll */}
       <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center p-1 rounded-full bg-white/90 backdrop-blur-xl border border-black/[0.08] shadow-md">
         <button
-          onClick={() => setViewMode('box3d')}
+          onClick={() => setViewMode('sanctuary3d')}
           className={`px-3.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
-            viewMode === 'box3d' ? 'bg-[#1d1d1f] text-white shadow-xs' : 'text-[#6e6e73] hover:text-[#1d1d1f]'
+            viewMode === 'sanctuary3d' ? 'bg-[#1d1d1f] text-white shadow-xs' : 'text-[#6e6e73] hover:text-[#1d1d1f]'
           }`}
         >
-          🎁 3D Wedding Box
+          🏛️ 3D Sanctuary
         </button>
         <button
           onClick={() => setViewMode('scroll')}
@@ -160,17 +160,17 @@ export default function App() {
       {/* Floating Dynamic Music Player */}
       <MusicPlayer audioSrc="/music.mp3" />
 
-      {/* VIEW 1: Interactive 3D Luxury Box & Unfolding Folio */}
-      {viewMode === 'box3d' ? (
+      {/* VIEW 1: Cinematic 3D Architectural Sanctuary Walkthrough */}
+      {viewMode === 'sanctuary3d' ? (
         <Suspense
           fallback={
             <div className="h-screen w-full flex items-center justify-center font-luxury text-lg text-[#1d1d1f]">
               <Sparkles className="w-5 h-5 text-[#b89562] animate-spin mr-2" />
-              <span>Preparing 3D Royal Invitation...</span>
+              <span>Entering the 3D Sanctuary...</span>
             </div>
           }
         >
-          <LuxuryFolioScene
+          <ArchitecturalSanctuary
             namesRef={namesRef}
             handlePointerDown={handlePointerDown}
             handlePointerMove={handlePointerMove}
