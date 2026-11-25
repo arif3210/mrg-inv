@@ -8,21 +8,27 @@ import {
   Share2,
   Navigation,
   CheckCircle,
-  CalendarPlus
+  CalendarPlus,
+  Compass,
+  Layers
 } from 'lucide-react';
+import SpatialCard3D from './components/SpatialCard3D';
 import SparklePhysicsCanvas from './components/SparklePhysicsCanvas';
 import MusicPlayer from './components/MusicPlayer';
 import CountdownTimer from './components/CountdownTimer';
 import SparkleCollectorGame from './components/SparkleCollectorGame';
 import SudokuGame from './components/SudokuGame';
 import FindJahanaGame from './components/FindJahanaGame';
-import PhysicsCard from './components/PhysicsCard';
+
+// Lazy load 3D Spatial Canvas for optimal initial paint & code-splitting
+const Spatial3DCanvas = lazy(() => import('./components/Spatial3DCanvas'));
 
 // Lazy load Limbo Easter Egg at the very end to ensure zero impact on initial site performance
 const LimboEasterEgg = lazy(() => import('./components/LimboEasterEgg'));
 
 export default function App() {
   const [chaosMode, setChaosMode] = useState(false);
+  const [isOrbitMode, setIsOrbitMode] = useState(false);
   const [activeGameTab, setActiveGameTab] = useState('sparkles'); // 'sparkles' | 'sudoku'
   const [isEasterEggOpen, setIsEasterEggOpen] = useState(false);
 
@@ -129,17 +135,42 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#fbfbfd] text-[#1d1d1f] relative selection:bg-[#1d1d1f] selection:text-white font-sans pb-24 overflow-x-hidden">
+      {/* Real-time 3D WebGL Canvas Scene: Rings, Star Crystals & Dynamic Camera */}
+      <Suspense fallback={null}>
+        <Spatial3DCanvas isOrbitMode={isOrbitMode} onToggleOrbit={() => setIsOrbitMode(!isOrbitMode)} />
+      </Suspense>
+
       {/* Sinking Sand Crystals in Water Particle Canvas */}
       <SparklePhysicsCanvas chaosMode={chaosMode} setChaosMode={setChaosMode} />
+
+      {/* Floating 3D Mode / Orbit Controller Pill */}
+      <div className="fixed top-5 left-5 z-40 flex items-center gap-2">
+        <button
+          onClick={() => setIsOrbitMode(!isOrbitMode)}
+          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 backdrop-blur-xl border transition-all shadow-sm ${
+            isOrbitMode
+              ? 'bg-[#1d1d1f] text-white border-black/20 scale-105 shadow-md'
+              : 'bg-white/85 text-[#1d1d1f] border-black/[0.08] hover:bg-white hover:border-[#b89562]/40'
+          }`}
+          title="Toggle 3D Orbit View"
+        >
+          <Compass className={`w-3.5 h-3.5 ${isOrbitMode ? 'text-[#e5c158] animate-spin' : 'text-[#b89562]'}`} />
+          <span>{isOrbitMode ? 'Exit 3D Orbit' : '3D Spatial Mode'}</span>
+        </button>
+      </div>
 
       {/* Floating Dynamic Music Player */}
       <MusicPlayer audioSrc="/music.mp3" />
 
-      {/* Main Container */}
-      <main className="max-w-xl mx-auto px-4 pt-12 sm:pt-16 space-y-8 relative z-20">
+      {/* Main Container - Fades out in Orbit Mode to give full view of 3D Scene */}
+      <main
+        className={`max-w-xl mx-auto px-4 pt-14 sm:pt-20 space-y-8 relative z-20 transition-all duration-500 ease-out ${
+          isOrbitMode ? 'opacity-20 pointer-events-none scale-95 blur-[2px]' : 'opacity-100'
+        }`}
+      >
         
         {/* HERO SECTION */}
-        <PhysicsCard chaosMode={chaosMode} id="hero">
+        <SpatialCard3D chaosMode={chaosMode} id="hero">
           <section className="apple-card rounded-[32px] p-7 sm:p-12 text-center relative group">
             
             {/* Header Tag & Bismillah */}
@@ -223,10 +254,10 @@ export default function App() {
               </button>
             </div>
           </section>
-        </PhysicsCard>
+        </SpatialCard3D>
 
         {/* VENUE & SCHEDULE */}
-        <PhysicsCard chaosMode={chaosMode} id="venue">
+        <SpatialCard3D chaosMode={chaosMode} id="venue">
           <section className="apple-card rounded-[32px] p-7 sm:p-9 space-y-6">
             <div className="text-center space-y-1">
               <span className="text-[11px] font-semibold text-[#86868b] uppercase tracking-wider">
@@ -304,10 +335,10 @@ export default function App() {
               </a>
             </div>
           </section>
-        </PhysicsCard>
+        </SpatialCard3D>
 
         {/* INTERACTIVE GAMES SECTION */}
-        <PhysicsCard chaosMode={chaosMode} id="games">
+        <SpatialCard3D chaosMode={chaosMode} id="games">
           <section className="space-y-4">
             <div className="text-center space-y-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-black/[0.06] text-[11px] font-semibold text-[#86868b] uppercase tracking-wider shadow-sm">
@@ -361,7 +392,7 @@ export default function App() {
             {activeGameTab === 'sudoku' && <SudokuGame />}
             {activeGameTab === 'findJahana' && <FindJahanaGame />}
           </section>
-        </PhysicsCard>
+        </SpatialCard3D>
 
         {/* MINIMAL FOOTER */}
         <footer className="text-center space-y-2 pt-8 pb-10 text-[#86868b] text-xs">
