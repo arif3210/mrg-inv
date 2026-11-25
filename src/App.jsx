@@ -22,11 +22,13 @@ import FindJahanaGame from './components/FindJahanaGame';
 
 // Lazy load 3D Spatial Canvas for optimal initial paint & code-splitting
 const Spatial3DCanvas = lazy(() => import('./components/Spatial3DCanvas'));
+const LuxuryFolioScene = lazy(() => import('./components/3d/LuxuryFolioScene'));
 
 // Lazy load Limbo Easter Egg at the very end to ensure zero impact on initial site performance
 const LimboEasterEgg = lazy(() => import('./components/LimboEasterEgg'));
 
 export default function App() {
+  const [viewMode, setViewMode] = useState('box3d'); // 'box3d' | 'scroll'
   const [chaosMode, setChaosMode] = useState(false);
   const [isOrbitMode, setIsOrbitMode] = useState(false);
   const [activeGameTab, setActiveGameTab] = useState('sparkles'); // 'sparkles' | 'sudoku'
@@ -134,44 +136,89 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbfbfd] text-[#1d1d1f] relative selection:bg-[#1d1d1f] selection:text-white font-sans pb-24 overflow-x-hidden">
-      {/* Real-time 3D WebGL Canvas Scene: Rings, Star Crystals & Dynamic Camera */}
-      <Suspense fallback={null}>
-        <Spatial3DCanvas isOrbitMode={isOrbitMode} onToggleOrbit={() => setIsOrbitMode(!isOrbitMode)} />
-      </Suspense>
-
-      {/* Sinking Sand Crystals in Water Particle Canvas */}
-      <SparklePhysicsCanvas chaosMode={chaosMode} setChaosMode={setChaosMode} />
-
-      {/* Floating 3D Mode / Orbit Controller Pill */}
-      <div className="fixed top-5 left-5 z-40 flex items-center gap-2">
+    <div className="min-h-screen bg-[#fbfbfd] text-[#1d1d1f] relative selection:bg-[#1d1d1f] selection:text-white font-sans overflow-x-hidden">
+      {/* Top Experience Switcher: 3D Box Folio vs Scroll View */}
+      <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center p-1 rounded-full bg-white/90 backdrop-blur-xl border border-black/[0.08] shadow-md">
         <button
-          onClick={() => setIsOrbitMode(!isOrbitMode)}
-          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 backdrop-blur-xl border transition-all shadow-sm ${
-            isOrbitMode
-              ? 'bg-[#1d1d1f] text-white border-black/20 scale-105 shadow-md'
-              : 'bg-white/85 text-[#1d1d1f] border-black/[0.08] hover:bg-white hover:border-[#b89562]/40'
+          onClick={() => setViewMode('box3d')}
+          className={`px-3.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+            viewMode === 'box3d' ? 'bg-[#1d1d1f] text-white shadow-xs' : 'text-[#6e6e73] hover:text-[#1d1d1f]'
           }`}
-          title="Toggle 3D Orbit View"
         >
-          <Compass className={`w-3.5 h-3.5 ${isOrbitMode ? 'text-[#e5c158] animate-spin' : 'text-[#b89562]'}`} />
-          <span>{isOrbitMode ? 'Exit 3D Orbit' : '3D Spatial Mode'}</span>
+          🎁 3D Wedding Box
+        </button>
+        <button
+          onClick={() => setViewMode('scroll')}
+          className={`px-3.5 py-1 rounded-full text-[11px] font-semibold transition-all ${
+            viewMode === 'scroll' ? 'bg-[#1d1d1f] text-white shadow-xs' : 'text-[#6e6e73] hover:text-[#1d1d1f]'
+          }`}
+        >
+          📜 Spatial Scroll
         </button>
       </div>
 
       {/* Floating Dynamic Music Player */}
       <MusicPlayer audioSrc="/music.mp3" />
 
-      {/* Main Container - Fades out in Orbit Mode to give full view of 3D Scene */}
-      <main
-        className={`max-w-xl mx-auto px-4 pt-14 sm:pt-20 space-y-8 relative z-20 transition-all duration-500 ease-out ${
-          isOrbitMode ? 'opacity-20 pointer-events-none scale-95 blur-[2px]' : 'opacity-100'
-        }`}
-      >
-        
-        {/* HERO SECTION */}
-        <SpatialCard3D chaosMode={chaosMode} id="hero">
-          <section className="apple-card rounded-[32px] p-7 sm:p-12 text-center relative group">
+      {/* VIEW 1: Interactive 3D Luxury Box & Unfolding Folio */}
+      {viewMode === 'box3d' ? (
+        <Suspense
+          fallback={
+            <div className="h-screen w-full flex items-center justify-center font-luxury text-lg text-[#1d1d1f]">
+              <Sparkles className="w-5 h-5 text-[#b89562] animate-spin mr-2" />
+              <span>Preparing 3D Royal Invitation...</span>
+            </div>
+          }
+        >
+          <LuxuryFolioScene
+            namesRef={namesRef}
+            handlePointerDown={handlePointerDown}
+            handlePointerMove={handlePointerMove}
+            handlePointerUp={handlePointerUp}
+            handleAmpersandClick={handleAmpersandClick}
+            handleAddToCalendar={handleAddToCalendar}
+            handleShare={handleShare}
+            venueGoogleMapsUrl={venueGoogleMapsUrl}
+            activeGameTab={activeGameTab}
+            setActiveGameTab={setActiveGameTab}
+          />
+        </Suspense>
+      ) : (
+        /* VIEW 2: 3D Spatial Scroll Journey */
+        <div className="pb-24">
+          {/* Real-time 3D WebGL Canvas Scene: Rings, Star Crystals & Dynamic Camera */}
+          <Suspense fallback={null}>
+            <Spatial3DCanvas isOrbitMode={isOrbitMode} onToggleOrbit={() => setIsOrbitMode(!isOrbitMode)} />
+          </Suspense>
+
+          {/* Sinking Sand Crystals in Water Particle Canvas */}
+          <SparklePhysicsCanvas chaosMode={chaosMode} setChaosMode={setChaosMode} />
+
+          {/* Floating 3D Mode / Orbit Controller Pill */}
+          <div className="fixed top-5 left-5 z-40 flex items-center gap-2">
+            <button
+              onClick={() => setIsOrbitMode(!isOrbitMode)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 backdrop-blur-xl border transition-all shadow-sm ${
+                isOrbitMode
+                  ? 'bg-[#1d1d1f] text-white border-black/20 scale-105 shadow-md'
+                  : 'bg-white/85 text-[#1d1d1f] border-black/[0.08] hover:bg-white hover:border-[#b89562]/40'
+              }`}
+              title="Toggle 3D Orbit View"
+            >
+              <Compass className={`w-3.5 h-3.5 ${isOrbitMode ? 'text-[#e5c158] animate-spin' : 'text-[#b89562]'}`} />
+              <span>{isOrbitMode ? 'Exit 3D Orbit' : '3D Spatial Mode'}</span>
+            </button>
+          </div>
+
+          {/* Main Container - Fades out in Orbit Mode to give full view of 3D Scene */}
+          <main
+            className={`max-w-xl mx-auto px-4 pt-16 sm:pt-20 space-y-8 relative z-20 transition-all duration-500 ease-out ${
+              isOrbitMode ? 'opacity-20 pointer-events-none scale-95 blur-[2px]' : 'opacity-100'
+            }`}
+          >
+            {/* HERO SECTION */}
+            <SpatialCard3D chaosMode={chaosMode} id="hero">
+              <section className="apple-card rounded-[32px] p-7 sm:p-12 text-center relative group">
             
             {/* Header Tag & Bismillah */}
             <div className="space-y-4 mb-8">
@@ -412,8 +459,10 @@ export default function App() {
           </p>
         </footer>
       </main>
+    </div>
+  )}
 
-      {/* Secret Limbo Easter Egg Overlay (Lazy-loaded, 0kb impact on initial page load) */}
+  {/* Secret Limbo Easter Egg Overlay (Lazy-loaded, 0kb impact on initial page load) */}
       <Suspense fallback={null}>
         {isEasterEggOpen && (
           <LimboEasterEgg
